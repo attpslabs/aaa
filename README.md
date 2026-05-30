@@ -19,10 +19,12 @@ mastodon.social. If `dave.bsky.social` resolves to a real DID, **or**
 can then invite the real owner to claim it by signing in with that account; see
 [Scope / caveats](#scope--caveats).)
 
-**Why these two and no others:** bsky.social is the mass-signup namespace for AT
-Protocol; mastodon.social is the dominant single server on ActivityPub. Both are
-single, resolvable namespaces — see [Scope / caveats](#scope--caveats) for why we
-reserve against specific servers rather than "any handle anywhere."
+**Supported namespaces:** 
+- .bsky.social,
+- @mastodon.social.
+
+**Bare names**
+The motivation is to achieve clean usernames while respecting people, creators and businesses that have already claimed a username. It is impossible to achieve clean usernames that would respect all servers (PDS & APS), this is an opinionated path that will update over time. See: [Scope / caveats](#scope--caveats).
 
 ## What's here
 
