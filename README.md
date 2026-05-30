@@ -6,10 +6,7 @@
 
 [![npm](https://img.shields.io/npm/v/@attps/aaa.svg)](https://www.npmjs.com/package/@attps/aaa)
 
-Treat existing identities elsewhere on the social web as first-class citizens
-when handing out handles on the **self.surf** PDS (the one behind
-[linkna.me](https://www.linkna.me)) — both **`<name>.bsky.social`** on AT
-Protocol and **`<name>@mastodon.social`** on ActivityPub.
+Treat the Bluesky & Mastodon application userbase as first-class citizens of the open social web.
 
 **The rule:** a bare name like `dave` is claimable on self.surf only if it is
 free across **all three** namespaces — self.surf, bsky.social, and
