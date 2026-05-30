@@ -42,7 +42,7 @@
     "access": "public"
   },
   "scripts": {
-    "audit": "tsx scripts/audit.ts",
+    "audit:handles": "tsx scripts/audit.ts",
     "check": "tsx scripts/check.ts",
     "typecheck": "tsc --noEmit",
     "build": "rm -rf dist && tsc -p tsconfig.build.json",

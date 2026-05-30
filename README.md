@@ -66,16 +66,22 @@ pnpm install        # or npm install
 Public APIs only — no secret required. It enumerates self.surf via
 `com.atproto.sync.listRepos`, resolves each DID's handle from the PLC directory
 (falling back to the PDS's own `com.atproto.repo.describeRepo` if PLC is
-unreachable), then checks each bare name against bsky.social using the same
-tiered resolver as the live gate.
+unreachable), then checks each bare name against **both reserved namespaces** —
+bsky.social and mastodon.social — using the same tiered resolver as the live
+gate. The CSV records which namespace reserves each name (`reserved_by`).
 
 ```bash
-pnpm audit                    # table to stdout
-pnpm audit --csv conflicts.csv
-pnpm audit --limit 500        # cap repos scanned, for a quick dry run
+pnpm audit:handles                  # table to stdout (bsky.social + mastodon.social)
+pnpm audit:handles --csv conflicts.csv
+pnpm audit:handles --bsky-only      # skip mastodon.social for a faster pass
+pnpm audit:handles --limit 500      # cap repos scanned, for a quick dry run
 ```
 
-Your `/dave` account will appear here if `dave.bsky.social` exists.
+> The script is named `audit:handles`, not `audit`, because `pnpm audit` is
+> pnpm's built-in vulnerability scanner and would shadow it.
+
+Your `/dave` account will appear here if `dave.bsky.social` or
+`dave@mastodon.social` exists.
 
 ## Spot-check one name
 
@@ -179,8 +185,8 @@ tier, anything else (5xx / timeout / connection refused) → inconclusive → fa
   nor unblocks anything itself. It just surfaces the conflict (with a `reason`)
   so the app can route to the right OAuth flow.
 - **Audit is report-only.** No notices, no renames. Existing conflicting
-  accounts are grandfathered. (The audit reports bsky.social conflicts only; it
-  does not yet scan for mastodon.social conflicts.)
+  accounts are grandfathered. The audit scans **both** bsky.social and
+  mastodon.social by default (`--bsky-only` skips the Mastodon pass).
 
 ## Related work — and why `aaa`
 

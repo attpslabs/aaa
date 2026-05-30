@@ -18,9 +18,11 @@ this repo runs in production; it produces a drop-in module, an audit report, and
 
 ```bash
 pnpm install            # or npm install
-pnpm audit              # enumerate self.surf, report bsky.social conflicts (table)
-pnpm audit --csv conflicts.csv   # also write CSV
-pnpm audit --limit 500  # cap repos scanned, for a quick dry run
+pnpm audit:handles      # enumerate self.surf, report bsky + mastodon conflicts (table)
+pnpm audit:handles --csv conflicts.csv   # also write CSV (with reserved_by column)
+pnpm audit:handles --bsky-only  # skip the mastodon.social pass (faster)
+pnpm audit:handles --limit 500  # cap repos scanned, for a quick dry run
+# (named audit:handles, not audit — `pnpm audit` is pnpm's built-in vulnerability scanner)
 pnpm check dave         # spot-check one name (bsky + mastodon; self.surf only if secret set)
 EPDS_INTERNAL_SECRET=… PDS_INTERNAL_URL=https://self.surf pnpm check dave  # full 3-namespace gate
 pnpm typecheck          # tsc --noEmit
@@ -56,13 +58,17 @@ resolution works" for the full tier list. In brief:
   `[A-Za-z0-9_]`, so a hyphenated name can never collide. Skipped when `skipMastodon`.
 
 Two opt-outs exist so the audit can reuse the rule cheaply: `bskyOnly` (skip the self.surf check —
-the audit enumerates self.surf itself via `listRepos` + PLC) and `skipMastodon` (the audit reports
-bsky.social conflicts only). Adding a new namespace = a new tiered resolver + a parallel branch in
-`checkHandleAvailability` + a `ReservationStatus` variant; mirror the bsky/mastodon shape.
+the audit enumerates self.surf itself via `listRepos` + PLC) and `skipMastodon` (test bsky.social
+only, skipping the per-name WebFinger lookups for a faster pass). Adding a new namespace = a new
+tiered resolver + a parallel branch in `checkHandleAvailability` + a `ReservationStatus` variant;
+mirror the bsky/mastodon shape.
 
 [scripts/audit.ts](scripts/audit.ts) uses **public APIs only** (no secret): `com.atproto.sync.listRepos`
 on self.surf → resolve each DID's handle from `plc.directory` → keep `.self.surf` handles →
-check each bare name against bsky.social. Report-only; existing conflicts are grandfathered.
+check each bare name against bsky.social **and** mastodon.social (pass `--bsky-only` to skip the
+latter). Report-only; existing conflicts are grandfathered. Records one row per account, with which
+namespace reserves the name (when both do, it reports `reserved-bsky`, mirroring the live gate's
+precedence).
 
 [drop-in/check-handle-route.ts](drop-in/check-handle-route.ts) imports from `@/lib/handle-reservation` —
 that path is a placeholder for where `reservation.ts` lands **inside linkname**, not a path in this

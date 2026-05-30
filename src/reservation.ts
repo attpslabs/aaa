@@ -357,8 +357,9 @@ export interface CheckAvailabilityOptions {
    */
   bskyOnly?: boolean;
   /**
-   * Skip the mastodon.social reservation. The audit only reports bsky.social
-   * conflicts, so it opts out to avoid the extra per-name WebFinger lookups.
+   * Skip the mastodon.social reservation, testing bsky.social only. Lets a
+   * caller avoid the extra per-name WebFinger lookups when a faster, bsky-only
+   * pass is enough (e.g. the audit's `--bsky-only` mode).
    */
   skipMastodon?: boolean;
 }

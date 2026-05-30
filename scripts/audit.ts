@@ -1,20 +1,26 @@
 #!/usr/bin/env node
 /**
- * Audit existing self.surf accounts for bsky.social conflicts.
+ * Audit existing self.surf accounts for cross-namespace conflicts.
  *
  * Reports every account `<name>.self.surf` whose bare name is ALSO a live
- * `<name>.bsky.social` handle. Under the new reservation rule these accounts
- * could not have been created today. Report only — no notices, no renames.
+ * `<name>.bsky.social` handle (AT Proto) or `<name>@mastodon.social` account
+ * (ActivityPub). Under the reservation rule these accounts could not have been
+ * created today. Report only — no notices, no renames.
+ *
+ * Both reserved namespaces are checked by default. Pass `--bsky-only` to skip
+ * the per-name Mastodon WebFinger lookups for a faster bsky.social-only pass.
  *
  * Strategy (public APIs only, no secret required):
  *   1. com.atproto.sync.listRepos on self.surf  -> every hosted DID (paginated)
  *   2. for each DID, read its current handle from the PLC directory DID doc
- *   3. if the handle ends in `.self.surf`, resolve `<name>.bsky.social`
+ *   3. if the handle ends in `.self.surf`, check `<name>.bsky.social` and
+ *      (unless --bsky-only) `<name>@mastodon.social`
  *   4. emit a report of the conflicts (table + CSV)
  *
  * Usage:
- *   pnpm tsx scripts/audit.ts                 # table to stdout
+ *   pnpm tsx scripts/audit.ts                 # table to stdout (bsky + mastodon)
  *   pnpm tsx scripts/audit.ts --csv out.csv   # also write CSV
+ *   pnpm tsx scripts/audit.ts --bsky-only     # skip mastodon.social (faster)
  *   pnpm tsx scripts/audit.ts --limit 500     # cap repos scanned (debug)
  */
 
@@ -23,6 +29,7 @@ import {
   PDS_URL,
   PDS_DOMAIN,
   RESERVED_DOMAIN,
+  MASTODON_DOMAIN,
   checkHandleAvailability,
 } from '../src/reservation.js';
 
@@ -39,14 +46,18 @@ interface Conflict {
   did: string;
   selfSurfHandle: string;
   bareName: string;
-  bskyHandle: string;
+  /** Which namespace reserves the bare name. */
+  reservedBy: 'bsky' | 'mastodon';
+  /** The reserving handle, e.g. `dave.bsky.social` or `dave@mastodon.social`. */
+  reservingHandle: string;
 }
 
-function parseArgs(argv: string[]): { csvPath?: string; limit?: number } {
-  const out: { csvPath?: string; limit?: number } = {};
+function parseArgs(argv: string[]): { csvPath?: string; limit?: number; bskyOnly: boolean } {
+  const out: { csvPath?: string; limit?: number; bskyOnly: boolean } = { bskyOnly: false };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--csv') out.csvPath = argv[++i];
     else if (argv[i] === '--limit') out.limit = Number(argv[++i]);
+    else if (argv[i] === '--bsky-only') out.bskyOnly = true;
   }
   return out;
 }
@@ -139,7 +150,8 @@ async function mapPool<T, R>(items: T[], n: number, fn: (item: T, i: number) => 
 }
 
 async function main() {
-  const { csvPath, limit } = parseArgs(process.argv.slice(2));
+  const { csvPath, limit, bskyOnly } = parseArgs(process.argv.slice(2));
+  const namespaces = bskyOnly ? 'bsky.social' : 'bsky.social + mastodon.social';
 
   console.error(`Enumerating accounts on ${PDS_URL} ...`);
   const repos = await listAllRepos(limit);
@@ -155,44 +167,65 @@ async function main() {
     (h): h is { did: string; handle: string } =>
       !!h.handle && h.handle.endsWith(`.${PDS_DOMAIN}`),
   );
-  console.error(`${selfSurf.length} accounts on .${PDS_DOMAIN}; checking bsky.social ...`);
+  console.error(`${selfSurf.length} accounts on .${PDS_DOMAIN}; checking ${namespaces} ...`);
 
   const conflicts: Conflict[] = [];
   await mapPool(selfSurf, RESOLVE_CONCURRENCY, async (acct) => {
     const bareName = acct.handle.slice(0, -1 * (`.${PDS_DOMAIN}`).length);
     // bskyOnly: we already know the self.surf side; just test the reservation.
-    // skipMastodon: this audit reports bsky.social conflicts only.
-    const result = await checkHandleAvailability(bareName, { bskyOnly: true, skipMastodon: true });
+    // skipMastodon mirrors the --bsky-only flag (faster, bsky.social only).
+    const result = await checkHandleAvailability(bareName, { bskyOnly: true, skipMastodon: bskyOnly });
+    // One row per account. When both namespaces reserve a name, the package
+    // reports `reserved-bsky` first, so the audit records the same verdict the
+    // live gate would give.
     if (result.status === 'reserved-bsky') {
       conflicts.push({
         did: acct.did,
         selfSurfHandle: acct.handle,
         bareName,
-        bskyHandle: `${bareName}.${RESERVED_DOMAIN}`,
+        reservedBy: 'bsky',
+        reservingHandle: `${bareName}.${RESERVED_DOMAIN}`,
+      });
+    } else if (result.status === 'reserved-mastodon') {
+      conflicts.push({
+        did: acct.did,
+        selfSurfHandle: acct.handle,
+        bareName,
+        reservedBy: 'mastodon',
+        reservingHandle: `${bareName}@${MASTODON_DOMAIN}`,
       });
     }
   });
 
   conflicts.sort((a, b) => a.bareName.localeCompare(b.bareName));
+  const bskyCount = conflicts.filter((c) => c.reservedBy === 'bsky').length;
+  const mastodonCount = conflicts.length - bskyCount;
 
   // ---- Report ----
   console.log('');
   console.log(`Conflicts: ${conflicts.length} of ${selfSurf.length} .${PDS_DOMAIN} accounts`);
-  console.log('(self.surf accounts whose bare name is a live bsky.social handle)');
+  console.log(
+    bskyOnly
+      ? '(self.surf accounts whose bare name is a live bsky.social handle)'
+      : `(self.surf accounts whose bare name is reserved elsewhere — ${bskyCount} bsky.social, ${mastodonCount} mastodon.social)`,
+  );
   console.log('');
   if (conflicts.length) {
     const w = Math.max(...conflicts.map((c) => c.selfSurfHandle.length), 16);
-    console.log(`${'self.surf handle'.padEnd(w)}  ${'bsky.social handle'.padEnd(w)}  did`);
-    console.log(`${'-'.repeat(w)}  ${'-'.repeat(w)}  ${'-'.repeat(30)}`);
+    const rw = Math.max(...conflicts.map((c) => c.reservingHandle.length), 18);
+    console.log(`${'self.surf handle'.padEnd(w)}  ${'reserved by'.padEnd(rw)}  did`);
+    console.log(`${'-'.repeat(w)}  ${'-'.repeat(rw)}  ${'-'.repeat(30)}`);
     for (const c of conflicts) {
-      console.log(`${c.selfSurfHandle.padEnd(w)}  ${c.bskyHandle.padEnd(w)}  ${c.did}`);
+      console.log(`${c.selfSurfHandle.padEnd(w)}  ${c.reservingHandle.padEnd(rw)}  ${c.did}`);
     }
   }
 
   if (csvPath) {
     const rows = [
-      'self_surf_handle,bsky_social_handle,bare_name,did',
-      ...conflicts.map((c) => `${c.selfSurfHandle},${c.bskyHandle},${c.bareName},${c.did}`),
+      'self_surf_handle,bare_name,reserved_by,reserving_handle,did',
+      ...conflicts.map(
+        (c) => `${c.selfSurfHandle},${c.bareName},${c.reservedBy},${c.reservingHandle},${c.did}`,
+      ),
     ];
     writeFileSync(csvPath, rows.join('\n') + '\n');
     console.error(`\nWrote ${conflicts.length} rows to ${csvPath}`);

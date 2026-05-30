@@ -23,7 +23,8 @@ This file only flags the points most likely to trip up an edit.
 ```bash
 pnpm install
 pnpm typecheck   # tsc --noEmit — the ONLY correctness gate (no test runner, no build for dev)
-pnpm audit       # enumerate self.surf, report bsky.social conflicts; --csv <file>, --limit N
+pnpm audit:handles  # enumerate self.surf, report bsky + mastodon conflicts; --csv <f>, --bsky-only, --limit N
+                    # (named audit:handles, not audit — `pnpm audit` is pnpm's built-in scanner)
 pnpm check dave  # spot-check one name
 pnpm build       # tsc -p tsconfig.build.json → dist/ (only needed before publish)
 ```
