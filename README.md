@@ -6,9 +6,7 @@
 
 [![npm](https://img.shields.io/npm/v/@attps/aaa.svg)](https://www.npmjs.com/package/@attps/aaa)
 
-attps/aaa is for apps that display a username for onboarding new people to social spaces that federate with the wider open social web.
-
-Treat the Bluesky & Mastodon application userbase as first-class citizens of the open social web.
+attps/aaa is for apps that display a username for onboarding new people to social spaces that federate with the wider open social web: the open social web is defined as Bluesky and Mastodon (for now).
 
 **The rule:** `alice` is claimable if it is free across **either** of these servers: bsky.social and mastodon.social. 
 
