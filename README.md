@@ -13,8 +13,10 @@ free across **all three** namespaces — self.surf, bsky.social, and
 mastodon.social. If `dave.bsky.social` resolves to a real DID, **or**
 `dave@mastodon.social` is a registered account, nobody can register
 `dave.self.surf` through the normal signup — the name is **reserved**. (The app
-can then invite the real owner to claim it by signing in with that account; see
-[Scope / caveats](#scope--caveats).)
+can then invite the real owner to claim it by signing in with that account using OAuth. For Mastodon users this creates a dedicated DID for the linkinbio.
+
+**Current and Future:**
+Currently Bluesky accounts that OAuth into Linkname do not receive a new additional DID, but depending on how we enable multi-player access-control, we might update this to reflect how Mastodon users also create a dedicated DID for account creation.
 
 **Supported namespaces:** 
 - .bsky.social,
