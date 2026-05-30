@@ -2,8 +2,10 @@
  * DROP-IN REPLACEMENT for linkname:
  *   src/app/api/auth/check-handle/route.ts
  *
- * Adds a bsky.social reservation check to the existing self.surf availability
- * check: a bare name is available only when it is free on BOTH namespaces.
+ * Adds cross-namespace reservation checks to the existing self.surf availability
+ * check: a bare name is available only when it is free across ALL THREE
+ * namespaces — self.surf, bsky.social (AT Protocol), and mastodon.social
+ * (ActivityPub).
  *
  * To install:
  *   1. `npm install @attps/aaa` in linkname (or copy src/reservation.ts in
@@ -12,8 +14,9 @@
  *
  * Behaviour vs. the original route:
  *   - same format validation + same fail-closed-on-error contract
- *   - NEW: rejects `<name>` when `<name>.bsky.social` resolves to a DID
- *   - the two upstream lookups run in parallel (no extra latency stacking)
+ *   - NEW: rejects `<name>` when `<name>.bsky.social` resolves to a DID, or when
+ *     `<name>@mastodon.social` is a registered account
+ *   - the upstream lookups run in parallel (no extra latency stacking)
  */
 
 import { checkHandleAvailability } from '@attps/aaa';

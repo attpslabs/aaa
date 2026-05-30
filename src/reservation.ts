@@ -1,9 +1,10 @@
 /**
  * aaa — handle reservation logic for self.surf signups.
  *
- * Goal: treat existing `<name>.bsky.social` accounts as first-class AT Protocol
- * citizens. A bare name (e.g. `dave`) is reservable on self.surf only if it is
- * taken on NEITHER self.surf NOR bsky.social.
+ * Goal: treat existing identities elsewhere on the social web as first-class
+ * citizens — `<name>.bsky.social` on AT Protocol and `<name>@mastodon.social`
+ * on ActivityPub. A bare name (e.g. `dave`) is reservable on self.surf only if
+ * it is taken on NONE of self.surf, bsky.social, or mastodon.social.
  *
  * This module is the single source of truth for that rule. It is consumed by:
  *   - the linkname `check-handle` route (live signup gate)  — see ../drop-in
