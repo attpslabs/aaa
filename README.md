@@ -170,6 +170,35 @@ tier, anything else (5xx / timeout / connection refused) → inconclusive → fa
   accounts are grandfathered. (The audit reports bsky.social conflicts only; it
   does not yet scan for mastodon.social conflicts.)
 
+## Related work — and why `aaa`
+
+Plenty of projects work across AT Protocol and ActivityPub, but they answer a
+different question than `aaa` does. They _connect_ a single identity to both
+networks — bridge it, dual-attach it, or translate between the two. `aaa` asks
+who is _allowed to claim a bare name_ in the first place, given that someone may
+already hold it elsewhere. That arbitration is an empty seat none of them fill.
+
+- **Bridges & dual-attach servers** ([Bridgy Fed](https://github.com/snarfed/bridgy-fed),
+  [Wafrn](https://github.com/gabboman/wafrn)) move identities across the
+  boundary. Bridgy Fed avoids name clashes _by construction_ — it bakes the
+  source protocol into the bridged subdomain (`alice.social.example.ap.brid.gy`),
+  so there is no shared bare-name space to fight over. Wafrn does the opposite of
+  `aaa`: it lets the collision happen and **renames the existing user**
+  afterward. `aaa` instead refuses the new signup up front — **fail closed.**
+- **Robin Berjon, _[ActivityPub Over ATProto](https://www.berjon.com/ap-at/)_**
+  is the closest peer. He proposes that `com.atproto.identity.resolveHandle`
+  could resolve `@robin@mastodon.social` the way it resolves `@robin.berjon.com`
+  — and then explicitly leaves the collision / first-claim question open, calling
+  it a "design provocation." **`aaa` is a concrete, deployed, fail-closed answer
+  to exactly that open question.**
+- **[FEP-EF61 "Portable Objects"](https://codeberg.org/fediverse/fep/src/branch/main/fep/ef61/fep-ef61.md)**
+  unifies identity one layer _below_ this: a portable `did:key` resolvable on
+  both networks. Even if it lands, someone still has to decide who gets the
+  human-readable bare name — which is `aaa`'s job. Complementary, not competing.
+
+A fuller, code-level survey of these projects (read from the source, not their
+READMEs) is in [docs/prior-art.md](docs/prior-art.md).
+
 ## License
 
 This project is dual-licensed under MIT and/or Apache 2.0, choose at your discretion:
