@@ -14,8 +14,8 @@ mastodon.social, and self.surf. If `alice.bsky.social` resolves to a DID, **and/
 `alice@mastodon.social` is a registered account, 
 `alice.self.surf` remains unclaimable, the name remains **reserved**. The controller of alice.bsky.social / alice@mastodon.social can claim alice.self.surf via OAuth login; attps/aaa is for apps that display a username for onboarding new people to their social, that want to federate with the wider open social web.
 
-**Current and future:**
-Currently Bluesky accounts that OAuth into an app use their existing PDS to read and write to it, but depending on how we enable multi-player access-control, we might update this to reflect how Mastodon users also create a dedicated DID for using the app.
+**OAuth login**
+The support of OAuth login is dependent per app, apps may decide to use Email OTP for anonymous accounts and/or private permissioned spaces.
 
 **Supported namespaces:** 
 - .bsky.social,
