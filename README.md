@@ -168,7 +168,7 @@ tier, anything else (5xx / timeout / connection refused) → inconclusive → fa
 
 ## License
 
-This project is dual-licensed under MIT and Apache 2.0 terms:
+This project is dual-licensed under MIT and/or Apache 2.0, choose at your discretion:
 
 - MIT license ([LICENSE-MIT.txt](LICENSE-MIT.txt) or http://opensource.org/licenses/MIT)
 - Apache License, Version 2.0, ([LICENSE-APACHE.txt](LICENSE-APACHE.txt) or http://www.apache.org/licenses/LICENSE-2.0)
