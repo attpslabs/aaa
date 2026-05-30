@@ -8,14 +8,14 @@
 
 Treat the Bluesky & Mastodon application userbase as first-class citizens of the open social web.
 
-**The rule:** a bare name like `dave` is claimable on self.surf only if it is
+**The rule:** a bare name like `alice` is claimable on self.surf only if it is
 free across **all three** namespaces — self.surf, bsky.social, and
-mastodon.social. If `dave.bsky.social` resolves to a real DID, **or**
-`dave@mastodon.social` is a registered account, nobody can register
-`dave.self.surf` through the normal signup — the name is **reserved**. (The app
+mastodon.social. If `alice.bsky.social` resolves to a real DID, **or**
+`alice@mastodon.social` is a registered account, nobody can register
+`alice.self.surf` through the normal signup — the name is **reserved**. (The app
 can then invite the real owner to claim it by signing in with that account using OAuth. For Mastodon users this creates a dedicated DID for the linkinbio.
 
-**Current and Future:**
+**Current and future:**
 Currently Bluesky accounts that OAuth into Linkname do not receive a new additional DID, but depending on how we enable multi-player access-control, we might update this to reflect how Mastodon users also create a dedicated DID for account creation.
 
 **Supported namespaces:** 
@@ -81,14 +81,14 @@ pnpm audit:handles --limit 500      # cap repos scanned, for a quick dry run
 > The script is named `audit:handles`, not `audit`, because `pnpm audit` is
 > pnpm's built-in vulnerability scanner and would shadow it.
 
-Your `/dave` account will appear here if `dave.bsky.social` or
-`dave@mastodon.social` exists.
+Your `/alice` account will appear here if `alice.bsky.social` or
+`alice@mastodon.social` exists.
 
 ## Spot-check one name
 
 ```bash
-pnpm check dave               # bsky + mastodon; self.surf only if the secret is set
-EPDS_INTERNAL_SECRET=… PDS_INTERNAL_URL=https://self.surf pnpm check dave   # full 3-namespace gate
+pnpm check alice               # bsky + mastodon; self.surf only if the secret is set
+EPDS_INTERNAL_SECRET=… PDS_INTERNAL_URL=https://self.surf pnpm check alice   # full 3-namespace gate
 ```
 
 ## Install the signup gate into linkname
@@ -165,21 +165,21 @@ tier, anything else (5xx / timeout / connection refused) → inconclusive → fa
   only specific, resolvable namespaces. We pick the dominant one per protocol:
   **bsky.social** (the AT Proto mass-signup namespace) and **mastodon.social**
   (the largest single ActivityPub server). Other servers are out of scope.
-- **Mastodon is a policy choice, not a collision.** `dave.bsky.social` and
-  `dave.self.surf` are the _same_ protocol — reserving one for the other avoids
-  an identity collision. `dave@mastodon.social` is a _different_ protocol;
-  reserving against it is a deliberate stance that the mastodon.social `dave`
+- **Mastodon is a policy choice, not a collision.** `alice.bsky.social` and
+  `alice.self.surf` are the _same_ protocol — reserving one for the other avoids
+  an identity collision. `alice@mastodon.social` is a _different_ protocol;
+  reserving against it is a deliberate stance that the mastodon.social `alice`
   deserves first claim. mastodon.social is one ActivityPub server among
   thousands — this privileges its users specifically, by design.
 - **Reserved is not a dead-end — the app offers an OAuth claim path.** `aaa`'s
   job ends at detecting the conflict: it reports `reserved-bsky` /
   `reserved-mastodon`. What happens next is the **app's** responsibility, not
   this package's. When the gate reports a name reserved by an existing
-  `dave.bsky.social` / `dave@mastodon.social`, the app can invite that person to
-  claim `dave.self.surf` by signing in with the reserving account:
+  `alice.bsky.social` / `alice@mastodon.social`, the app can invite that person to
+  claim `alice.self.surf` by signing in with the reserving account:
   - **Sign in with Bluesky** (OAuth) — the user keeps their existing
-    `dave.bsky.social` PDS.
-  - **Sign in with Mastodon** (OAuth) — a new `dave.self.surf` PDS is issued
+    `alice.bsky.social` PDS.
+  - **Sign in with Mastodon** (OAuth) — a new `alice.self.surf` PDS is issued
     that the user controls via their Mastodon account.
 
   `aaa` does not perform or verify this claim — it neither knows who is logged in
