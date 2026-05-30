@@ -34,8 +34,6 @@ The motivation is to achieve clean usernames while respecting people, creators a
 | `scripts/audit.ts` | Reports existing self.surf accounts whose bare name is a live bsky.social handle. Report only. |
 | `scripts/check.ts` | Spot-check a single name from the CLI. |
 
-linkname itself is **not modified** — wire the drop-in in when you're ready.
-
 ## Install
 
 Use it as a dependency in your own app:
@@ -62,7 +60,7 @@ cd aaa
 pnpm install        # or npm install
 ```
 
-## Run the audit (existing conflicts)
+## Issue1 TODO: Run the audit (existing conflicts)
 
 Public APIs only — no secret required. It enumerates self.surf via
 `com.atproto.sync.listRepos`, resolves each DID's handle from the PLC directory
@@ -90,19 +88,6 @@ Your `/alice` account will appear here if `alice.bsky.social` or
 pnpm check alice               # bsky + mastodon; self.surf only if the secret is set
 EPDS_INTERNAL_SECRET=… PDS_INTERNAL_URL=https://self.surf pnpm check alice   # full 3-namespace gate
 ```
-
-## Install the signup gate into linkname
-
-1. Copy `src/reservation.ts` into linkname, e.g. `src/lib/handle-reservation.ts`.
-2. Replace `src/app/api/auth/check-handle/route.ts` with
-   `drop-in/check-handle-route.ts`, fixing the import path.
-3. The existing client hook (`useHandleCheck.ts`) already surfaces `reason`, so
-   the new "Reserved by the existing @name.bsky.social account" message shows
-   with no client change.
-
-The route keeps linkname's existing contract: same format validation, and it
-**fails closed** (503, `available: false`) whenever either upstream lookup is
-inconclusive — a resolver or PDS outage can never leak a reserved name.
 
 ## How resolution works
 
