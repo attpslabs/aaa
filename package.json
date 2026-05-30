@@ -4,6 +4,15 @@
   "description": "Reserve bare-name handles on a PDS against existing bsky.social (AT Protocol) and mastodon.social (ActivityPub) identities. Zero-dependency, edge-safe, fail-closed.",
   "type": "module",
   "license": "(MIT OR Apache-2.0)",
+  "author": "attps labs limited",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/attpslabs/aaa.git"
+  },
+  "bugs": {
+    "url": "https://github.com/attpslabs/aaa/issues"
+  },
+  "homepage": "https://github.com/attpslabs/aaa#readme",
   "keywords": [
     "atproto",
     "bluesky",

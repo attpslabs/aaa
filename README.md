@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="aaa.png" alt="aaa" width="200">
+  <img src="https://raw.githubusercontent.com/attpslabs/aaa/main/aaa.png" alt="aaa" width="200">
 </p>
 
 # aaa
