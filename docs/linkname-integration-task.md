@@ -90,24 +90,42 @@ accounts are untouched — this is a forward-looking gate only.
    - `pdsInternalUrl: process.env.PDS_INTERNAL_URL` (fall back to
      `https://self.surf` if unset)
    - `internalSecret: process.env.EPDS_INTERNAL_SECRET ?? ''`
-4. **Preserve the existing route contract exactly:**
+4. **Preserve the existing route contract, but expose `status` and `reason`:**
    - Same request shape (the `handle` query/body param the client already sends).
-   - Same success response shape the client hook expects (it already surfaces a
-     `reason` string — keep that field so the new "Reserved by the existing
-     @name.bsky.social account" message displays with no client change).
+   - The response MUST include both `status` (the `ReservationStatus`) and
+     `reason` from the package result, in addition to `available`. The client
+     needs `status` to branch the UI (see step 5) — returning only `available`
+     is what produced the generic "already taken" message and is not acceptable.
    - **Fail closed on the error path:** when `result.status === 'error'`, return
      the existing error status code (the current route uses **503**) with
      `available: false`. Do not turn an inconclusive result into a 200/available.
-5. Do **not** change the client. The existing hook (look for `useHandleCheck` or
-   similar) already renders `reason`, so the new reserved-name messages appear
-   for free. Verify this assumption by reading the hook; if it doesn't surface
-   `reason`, note it and make the minimal change so it does.
+5. **Make the client status-aware (this is required, not optional).** The signup
+   form currently collapses every unavailable result into a hardcoded generic
+   string (observed: "jay is already taken") — it ignores `status`/`reason`. Fix
+   the hook (look for `useHandleCheck` or similar) and the form to branch on
+   `status`:
+
+   | `status` | UI |
+   | --- | --- |
+   | `available` | normal success state |
+   | `taken-self-surf` | "`<name>` is already taken" (the existing generic message is correct **only** here) |
+   | `reserved-bsky` | show `reason`, plus a **Sign in with Bluesky** CTA — "`<name>` is reserved by @`<name>`.bsky.social. Is this you? Sign in with Bluesky to claim it." |
+   | `reserved-mastodon` | show `reason`, plus a **Sign in with Mastodon** CTA — same shape, `@<name>@mastodon.social` |
+   | `invalid` | show `reason` (format error) |
+   | `error` | "Couldn't check availability — please try again" (do **not** say "taken") |
+
+   The CTA wiring to the actual OAuth flow is the broader claim feature (out of
+   scope here — stub/route the button as your codebase prefers), but the
+   **status-aware copy and the presence of the right CTA per status is in scope.**
+   A reserved name must never render as a flat "already taken" dead-end.
 6. Keep the route on the edge runtime if it already is (`export const runtime =
    'edge'`). The package is edge-safe; don't move it to the Node runtime.
 
 **Acceptance for Part 1:**
-- A name with a live `*.bsky.social` or `*@mastodon.social` account is rejected
-  at signup with a clear `reason`.
+- A name reserved by `*.bsky.social` shows the Bluesky claim CTA; one reserved by
+  `*@mastodon.social` shows the Mastodon CTA; a self.surf-taken name shows the
+  plain "already taken" — i.e. the three are visibly distinct, not one generic
+  string.
 - A genuinely free name still succeeds.
 - An induced upstream failure (e.g. point `pdsInternalUrl` at an unreachable
   host in a local test) yields `available: false` + 503 — never available.
@@ -186,15 +204,15 @@ between audit and launch.
 - **`@attps/aaa` itself does NOT verify ownership or unblock anything.** It only
   reports the conflict (`reserved-bsky` / `reserved-mastodon`). Do not try to
   make the package do an ownership check — that is not its role.
-- **Offering the OAuth claim path IS linkname's job (out of scope for this task,
-  but don't design against it).** When the gate reports a reserved name, the
-  intended UX is that linkname invites that person to claim `dave.self.surf` by
-  signing in with the reserving account — Sign in with Bluesky (OAuth; keeps
-  their existing `dave.bsky.social` PDS) or Sign in with Mastodon (OAuth; issues
-  a new `dave.self.surf` PDS they control via their Mastodon account). You are
-  not building that claim flow in this task, but: surface the `reason` clearly so
-  a future claim CTA can hook onto it, and do **not** treat a reserved result as
-  a permanent hard error in the UI copy.
+- **Scope boundary on the OAuth claim path.** _In scope_ (Part 1, step 5): the
+  status-aware UI — distinct copy per `status` and the correct CTA button
+  (Sign in with Bluesky / Sign in with Mastodon) shown for `reserved-bsky` /
+  `reserved-mastodon`. A reserved name must never render as a flat "already
+  taken." _Out of scope_: the actual OAuth claim implementation behind those
+  buttons — Sign in with Bluesky (keeps their existing `dave.bsky.social` PDS)
+  or Sign in with Mastodon (issues a new `dave.self.surf` PDS they control). Stub
+  or route the CTA as your codebase prefers; don't build the OAuth flow here, but
+  don't design the UI in a way the claim flow would later have to undo.
 - **Do not** weaken fail-closed behavior anywhere.
 - **Do not** vendor or fork the package logic into linkname; depend on the
   published `@attps/aaa` so the rule stays a single source of truth.
@@ -203,8 +221,9 @@ between audit and launch.
 
 ## Deliverables
 
-1. The updated check-handle route (Part 1) + confirmation the client surfaces
-   `reason` unchanged.
+1. The updated check-handle route (returns `status` + `reason` + `available`)
+   and the status-aware client UI (distinct copy + the right claim CTA per
+   `status`; no more generic "already taken" for reserved names).
 2. The audit script (Part 2) + the generated `conflicts.csv` (or a sample, if
    you can't run against prod from your environment).
 3. A short note in your PR description: which files changed, how you verified
