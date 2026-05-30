@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/attpslabs/aaa/main/nameplease.png" alt="Name, please?" width="600">
+</p>
+
 # Prior art: bridging and reconciling identity across AT Protocol and ActivityPub
 
 `aaa` answers a narrow question: **may a new, unrelated user claim the bare name
