@@ -9,8 +9,8 @@
 Treat the Bluesky & Mastodon application userbase as first-class citizens of the open social web.
 
 **The rule:** a bare name like `alice` is claimable on self.surf only if it is
-free across **all three** namespaces: bsky.social, 
-mastodon.social, and self.surf. If `alice.bsky.social` resolves to a DID, **and/or**
+free across **either** of these servers: bsky.social and 
+mastodon.social. If `alice.bsky.social` resolves to a DID, **and/or**
 `alice@mastodon.social` is a registered account, 
 `alice.self.surf` remains unclaimable, the name remains **reserved**. The controller of alice.bsky.social / alice@mastodon.social can claim alice.self.surf via OAuth login; attps/aaa is for apps that display a username for onboarding new people to their social, that want to federate with the wider open social web.
 
