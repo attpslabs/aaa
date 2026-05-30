@@ -27,6 +27,8 @@ import {
 } from '../src/reservation.js';
 
 const PLC_DIRECTORY = 'https://plc.directory';
+/** PDS host that actually stores these repos — used to confirm a DID's handle. */
+const AUDIT_PDS_URL = PDS_URL;
 const RESOLVE_CONCURRENCY = 8;
 
 interface RepoEntry {
@@ -74,9 +76,11 @@ async function listAllRepos(limit?: number): Promise<RepoEntry[]> {
   return repos;
 }
 
-/** Resolve a DID's currently-declared handle from its PLC directory document. */
-async function handleForDid(did: string): Promise<string | null> {
-  if (!did.startsWith('did:plc:')) return null; // self.surf uses did:plc
+/**
+ * PRIMARY DID->handle: the PLC directory document's `alsoKnownAs`.
+ * plc.directory is the canonical DID registry, run independently of the PDS.
+ */
+async function handleForDidViaPlc(did: string): Promise<string | null> {
   try {
     const res = await fetch(`${PLC_DIRECTORY}/${encodeURIComponent(did)}`, {
       signal: AbortSignal.timeout(8000),
@@ -88,6 +92,36 @@ async function handleForDid(did: string): Promise<string | null> {
   } catch {
     return null;
   }
+}
+
+/**
+ * FALLBACK DID->handle: ask the PDS itself via `com.atproto.repo.describeRepo`.
+ * Independent of plc.directory (reads the PDS's own store), so it covers a PLC
+ * outage. Returns the handle only when the PDS reports it as correct, to avoid
+ * trusting a stale/unverified handle field.
+ */
+async function handleForDidViaDescribeRepo(did: string): Promise<string | null> {
+  try {
+    const url = `${AUDIT_PDS_URL}/xrpc/com.atproto.repo.describeRepo?repo=${encodeURIComponent(
+      did,
+    )}`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return null;
+    const doc = (await res.json()) as { handle?: string; handleIsCorrect?: boolean };
+    if (!doc.handle || doc.handleIsCorrect === false) return null;
+    return doc.handle;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Resolve a DID's currently-declared handle. PLC directory first (canonical),
+ * the PDS's own describeRepo as an independent fallback when PLC is unreachable.
+ */
+async function handleForDid(did: string): Promise<string | null> {
+  if (!did.startsWith('did:plc:')) return null; // self.surf uses did:plc
+  return (await handleForDidViaPlc(did)) ?? (await handleForDidViaDescribeRepo(did));
 }
 
 /** Simple bounded-concurrency map. */
@@ -127,7 +161,8 @@ async function main() {
   await mapPool(selfSurf, RESOLVE_CONCURRENCY, async (acct) => {
     const bareName = acct.handle.slice(0, -1 * (`.${PDS_DOMAIN}`).length);
     // bskyOnly: we already know the self.surf side; just test the reservation.
-    const result = await checkHandleAvailability(bareName, { bskyOnly: true });
+    // skipMastodon: this audit reports bsky.social conflicts only.
+    const result = await checkHandleAvailability(bareName, { bskyOnly: true, skipMastodon: true });
     if (result.status === 'reserved-bsky') {
       conflicts.push({
         did: acct.did,

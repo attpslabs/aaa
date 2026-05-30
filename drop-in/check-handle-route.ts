@@ -6,8 +6,8 @@
  * check: a bare name is available only when it is free on BOTH namespaces.
  *
  * To install:
- *   1. Copy src/reservation.ts from handle-guard into linkname (e.g.
- *      src/lib/handle-reservation.ts) and fix the import below.
+ *   1. `npm install @attps/aaa` in linkname (or copy src/reservation.ts in
+ *      manually) and point the import below at it.
  *   2. Replace linkname's check-handle/route.ts with this file.
  *
  * Behaviour vs. the original route:
@@ -16,8 +16,8 @@
  *   - the two upstream lookups run in parallel (no extra latency stacking)
  */
 
-import { checkHandleAvailability } from '@/lib/handle-reservation';
-// ^ adjust path to wherever you place reservation.ts inside linkname
+import { checkHandleAvailability } from '@attps/aaa';
+// ^ or '@/lib/handle-reservation' if you copied reservation.ts in manually
 
 export const runtime = 'edge';
 

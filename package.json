@@ -1,13 +1,46 @@
 {
-  "name": "handle-guard",
+  "name": "@attps/aaa",
   "version": "0.1.0",
-  "private": true,
+  "description": "Reserve bare-name handles on a PDS against existing bsky.social (AT Protocol) and mastodon.social (ActivityPub) identities. Zero-dependency, edge-safe, fail-closed.",
   "type": "module",
-  "description": "Reserve bsky.social bare-name handles on the self.surf PDS, plus an audit of existing conflicts.",
+  "license": "(MIT OR Apache-2.0)",
+  "keywords": [
+    "atproto",
+    "bluesky",
+    "mastodon",
+    "activitypub",
+    "pds",
+    "handle",
+    "self.surf"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.txt",
+    "LICENSE-MIT.txt",
+    "LICENSE-APACHE.txt"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "audit": "tsx scripts/audit.ts",
     "check": "tsx scripts/check.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run typecheck && npm run build"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
