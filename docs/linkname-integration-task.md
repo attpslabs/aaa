@@ -183,9 +183,18 @@ between audit and launch.
 
 - **Do not** rename, delete, or notify existing accounts programmatically. The
   audit is report-only; contact is a human, ad-hoc step.
-- **Do not** add an ownership-aware exception (letting the real owner of
-  `dave.bsky.social` claim `dave.self.surf`). That is a deliberate future
-  feature, out of scope here — the current rule is a hard block for everyone.
+- **`@attps/aaa` itself does NOT verify ownership or unblock anything.** It only
+  reports the conflict (`reserved-bsky` / `reserved-mastodon`). Do not try to
+  make the package do an ownership check — that is not its role.
+- **Offering the OAuth claim path IS linkname's job (out of scope for this task,
+  but don't design against it).** When the gate reports a reserved name, the
+  intended UX is that linkname invites that person to claim `dave.self.surf` by
+  signing in with the reserving account — Sign in with Bluesky (OAuth; keeps
+  their existing `dave.bsky.social` PDS) or Sign in with Mastodon (OAuth; issues
+  a new `dave.self.surf` PDS they control via their Mastodon account). You are
+  not building that claim flow in this task, but: surface the `reason` clearly so
+  a future claim CTA can hook onto it, and do **not** treat a reserved result as
+  a permanent hard error in the UI copy.
 - **Do not** weaken fail-closed behavior anywhere.
 - **Do not** vendor or fork the package logic into linkname; depend on the
   published `@attps/aaa` so the rule stays a single source of truth.

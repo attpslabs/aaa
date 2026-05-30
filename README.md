@@ -15,8 +15,9 @@ Protocol and **`<name>@mastodon.social`** on ActivityPub.
 free across **all three** namespaces — self.surf, bsky.social, and
 mastodon.social. If `dave.bsky.social` resolves to a real DID, **or**
 `dave@mastodon.social` is a registered account, nobody can register
-`dave.self.surf` — a **hard block for everyone** (including the real owner of
-those accounts, for now).
+`dave.self.surf` through the normal signup — the name is **reserved**. (The app
+can then invite the real owner to claim it by signing in with that account; see
+[Scope / caveats](#scope--caveats).)
 
 **Why these two and no others:** bsky.social is the mass-signup namespace for AT
 Protocol; mastodon.social is the dominant single server on ActivityPub. Both are
@@ -163,9 +164,20 @@ tier, anything else (5xx / timeout / connection refused) → inconclusive → fa
   reserving against it is a deliberate stance that the mastodon.social `dave`
   deserves first claim. mastodon.social is one ActivityPub server among
   thousands — this privileges its users specifically, by design.
-- **Hard block.** The real owner of `dave.bsky.social` / `dave@mastodon.social`
-  also cannot claim `dave.self.surf` yet. An ownership-aware exception (prove the
-  logged-in user controls the reserving account) is a future addition.
+- **Reserved is not a dead-end — the app offers an OAuth claim path.** `aaa`'s
+  job ends at detecting the conflict: it reports `reserved-bsky` /
+  `reserved-mastodon`. What happens next is the **app's** responsibility, not
+  this package's. When the gate reports a name reserved by an existing
+  `dave.bsky.social` / `dave@mastodon.social`, the app can invite that person to
+  claim `dave.self.surf` by signing in with the reserving account:
+  - **Sign in with Bluesky** (OAuth) — the user keeps their existing
+    `dave.bsky.social` PDS.
+  - **Sign in with Mastodon** (OAuth) — a new `dave.self.surf` PDS is issued
+    that the user controls via their Mastodon account.
+
+  `aaa` does not perform or verify this claim — it neither knows who is logged in
+  nor unblocks anything itself. It just surfaces the conflict (with a `reason`)
+  so the app can route to the right OAuth flow.
 - **Audit is report-only.** No notices, no renames. Existing conflicting
   accounts are grandfathered. (The audit reports bsky.social conflicts only; it
   does not yet scan for mastodon.social conflicts.)

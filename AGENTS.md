@@ -76,10 +76,12 @@ on the error path.
   module resolution.
 - The `HANDLE_REGEX` and length bounds in `validateBareHandle` mirror linkname's server-side check;
   keep them in sync with linkname if that validation changes.
-- Known caveat (intentional, not a bug): the reservation is a **hard block** — even the real owner
-  of `dave.bsky.social` / `dave@mastodon.social` cannot yet claim `dave.self.surf`. An
-  ownership-aware exception (prove the logged-in user controls the reserving account) is a future
-  addition.
+- Intentional, not a bug: `aaa` reports a reserved name (`reserved-bsky` /
+  `reserved-mastodon`) and **does not unblock it or verify ownership** — that is out of scope for
+  this package by design. Reserved is not a permanent dead-end, though: the **app** can invite the
+  real owner of `dave.bsky.social` / `dave@mastodon.social` to claim `dave.self.surf` by signing in
+  with that account (OAuth — Bluesky reuses their existing PDS; Mastodon issues a new `dave.self.surf`
+  PDS they control). Don't add an ownership check to `aaa`; that responsibility belongs to the app.
 - The mastodon.social reservation is a deliberate **policy** choice, not a protocol collision:
   unlike bsky↔self.surf (same protocol), `@dave@mastodon.social` is ActivityPub and gives its
   users first claim on the self.surf name. It is one server among thousands — chosen as the

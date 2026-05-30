@@ -39,5 +39,6 @@ pnpm build       # tsc -p tsconfig.build.json → dist/ (only needed before publ
 - This repo is a standalone helper, **not** the deployed app. Nothing here runs in production;
   `drop-in/check-handle-route.ts` is copied into linkname when ready, and its
   `@/lib/handle-reservation` import is a placeholder for where `reservation.ts` lands there.
-- Behaviors that look like bugs but are intentional design (don't "fix" them): the hard block on
-  the real account owner, and reserving against mastodon.social as a policy choice. See AGENTS.md.
+- Behaviors that look like bugs but are intentional design (don't "fix" them): `aaa` reports a
+  reserved name and never verifies ownership or unblocks it (the app offers an OAuth claim path, not
+  this package), and reserving against mastodon.social is a deliberate policy choice. See AGENTS.md.
