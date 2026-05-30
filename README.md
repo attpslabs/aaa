@@ -15,6 +15,7 @@ mastodon.social, and self.surf. If `alice.bsky.social` resolves to a DID, **and/
 `alice.self.surf` remains unclaimable, the name remains **reserved**. The controller of alice.bsky.social / alice@mastodon.social can claim alice.self.surf via OAuth login; attps/aaa is for apps that display a username for onboarding new people to their social, that want to federate with the wider open social web.
 
 **Supported namespaces:** 
+- any domain (like nytimes.com),
 - .bsky.social,
 - @mastodon.social.
 
