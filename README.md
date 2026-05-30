@@ -6,13 +6,15 @@
 
 [![npm](https://img.shields.io/npm/v/@attps/aaa.svg)](https://www.npmjs.com/package/@attps/aaa)
 
+attps/aaa is for apps that display a username for onboarding new people to social spaces that federate with the wider open social web.
+
 Treat the Bluesky & Mastodon application userbase as first-class citizens of the open social web.
 
 **The rule:** `alice` is claimable if it is free across **either** of these servers: bsky.social and mastodon.social. 
 
 If `alice.bsky.social` resolves to a DID, **and/or** `alice@mastodon.social` is a registered account, then alice can OAuth to claim their alice.self.surf account.
 
-`alice.self.surf` remains unclaimable, the name remains **reserved**. The controller of alice.bsky.social / alice@mastodon.social can claim alice.self.surf via OAuth login; attps/aaa is for apps that display a username for onboarding new people to their social, that want to federate with the wider open social web.
+`alice.self.surf` remains unclaimable for people who do not have the keys to authenticate via OAuth, the name `alice` remains reserved.
 
 **Supported namespaces:** 
 - any domain (like nytimes.com),
