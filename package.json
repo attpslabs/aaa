@@ -1,0 +1,17 @@
+{
+  "name": "handle-guard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Reserve bsky.social bare-name handles on the self.surf PDS, plus an audit of existing conflicts.",
+  "scripts": {
+    "audit": "tsx scripts/audit.ts",
+    "check": "tsx scripts/check.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
