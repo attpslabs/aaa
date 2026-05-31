@@ -21,8 +21,7 @@ If `alice.bsky.social` resolves to a DID, **and/or** `alice@mastodon.social` is 
 
 **OAuth login:** The support of OAuth login is dependent per app, apps may decide to use Email OTP for anonymous accounts and/or private permissioned spaces. Apps may decide to OAuth non-open social web accounts for a method of onboarding onto a DID.
 
-**Bare names**
-The motivation is to achieve clean usernames while respecting people, creators and businesses that have already claimed a username. It is impossible to achieve clean usernames that would respect all servers (PDS & APS), this is an opinionated path that will update over time. See: [Scope / caveats](#scope--caveats).
+**Bare names:** The motivation is to achieve clean usernames while respecting people, creators and businesses that have already claimed a username. It is impossible to achieve clean usernames that would respect all servers (PDS & APS), this is an opinionated path that will update over time. See: [Scope / caveats](#scope--caveats).
 
 ## What's here
 
